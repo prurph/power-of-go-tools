@@ -54,3 +54,21 @@ func TestWithInputFromArgsEmpty(t *testing.T) {
 		t.Errorf("want %d, got %d", want, got)
 	}
 }
+
+func TestWords(t *testing.T) {
+	t.Parallel()
+	inputBuf := bytes.NewBufferString(
+		"1\n2 words\n3 this time",
+	)
+	c, err := count.NewCounter(
+		count.WithInput(inputBuf),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := 6
+	got := c.Words()
+	if want != got {
+		t.Errorf("want %d, got %d", want, got)
+	}
+}

@@ -82,3 +82,24 @@ func Lines() int {
 	}
 	return c.Lines()
 }
+
+func (c counter) Words() int {
+	words := 0
+	scanner := bufio.NewScanner(c.input)
+	scanner.Split(bufio.ScanWords)
+	for scanner.Scan() {
+		words++
+	}
+	return words
+}
+
+func Words() int {
+	c, err := NewCounter(
+		WithInputFromArgs(os.Args[1:]),
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		panic("internal error")
+	}
+	return c.Words()
+}

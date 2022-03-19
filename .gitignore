@@ -4,6 +4,8 @@
 *.dll
 *.so
 *.dylib
+cmd
+!cmd/
 
 # Test binary, built with `go test -c`
 *.test
@@ -16,6 +18,3 @@
 
 # Go workspace file
 go.work
-
-# Build commands
-cmd
