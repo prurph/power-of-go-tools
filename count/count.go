@@ -3,6 +3,7 @@ package count
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
 	"os"
 )
@@ -38,6 +39,20 @@ func WithInput(input io.Reader) option {
 	}
 }
 
+func WithInputFromArgs(args []string) option {
+	return func(c *counter) error {
+		if len(args) == 0 {
+			return nil
+		}
+		f, err := os.Open(args[0])
+		if err != nil {
+			return err
+		}
+		c.input = f
+		return nil
+	}
+}
+
 func WithOutput(output io.Writer) option {
 	return func(c *counter) error {
 		if output == nil {
@@ -58,8 +73,11 @@ func (c counter) Lines() int {
 }
 
 func Lines() int {
-	c, err := NewCounter()
+	c, err := NewCounter(
+		WithInputFromArgs(os.Args[1:]),
+	)
 	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
 		panic("internal error")
 	}
 	return c.Lines()
