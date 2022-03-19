@@ -8,8 +8,13 @@ import (
 
 func TestLines(t *testing.T) {
 	t.Parallel()
-	c := count.NewCounter()
-	c.Input = bytes.NewBufferString("1\n2\n3")
+	inputBuf := bytes.NewBufferString("1\n2\n3")
+	c, err := count.NewCounter(
+		count.WithInput(inputBuf),
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
 	want := 3
 	got := c.Lines()
 	if want != got {

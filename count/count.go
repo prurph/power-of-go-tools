@@ -2,23 +2,55 @@ package count
 
 import (
 	"bufio"
+	"errors"
 	"io"
 	"os"
 )
 
 type counter struct {
-	Input io.Reader
+	input  io.Reader
+	output io.Writer
 }
 
-func NewCounter() counter {
-	return counter{
-		Input: os.Stdin,
+type option func(*counter) error
+
+func NewCounter(opts ...option) (counter, error) {
+	c := counter{
+		input:  os.Stdin,
+		output: os.Stdout,
+	}
+	for _, opt := range opts {
+		err := opt(&c)
+		if err != nil {
+			return counter{}, err
+		}
+	}
+	return c, nil
+}
+
+func WithInput(input io.Reader) option {
+	return func(c *counter) error {
+		if input == nil {
+			return errors.New("nil input reader")
+		}
+		c.input = input
+		return nil
+	}
+}
+
+func WithOutput(output io.Writer) option {
+	return func(c *counter) error {
+		if output == nil {
+			return errors.New("nil output writer")
+		}
+		c.output = output
+		return nil
 	}
 }
 
 func (c counter) Lines() int {
 	lines := 0
-	scanner := bufio.NewScanner(c.Input)
+	scanner := bufio.NewScanner(c.input)
 	for scanner.Scan() {
 		lines++
 	}
@@ -26,5 +58,9 @@ func (c counter) Lines() int {
 }
 
 func Lines() int {
-	return NewCounter().Lines()
+	c, err := NewCounter()
+	if err != nil {
+		panic("internal error")
+	}
+	return c.Lines()
 }
