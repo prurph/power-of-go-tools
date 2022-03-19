@@ -3,14 +3,16 @@ package count
 import (
 	"bufio"
 	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"os"
 )
 
 type counter struct {
-	input  io.Reader
-	output io.Writer
+	input     io.Reader
+	output    io.Writer
+	wordCount bool
 }
 
 type option func(*counter) error
@@ -39,9 +41,17 @@ func WithInput(input io.Reader) option {
 	}
 }
 
-func WithInputFromArgs(args []string) option {
+func FromArgs(args []string) option {
 	return func(c *counter) error {
-		if len(args) == 0 {
+		fset := flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
+		wordCount := fset.Bool("w", false, "Count words instead of lines")
+		fset.SetOutput(c.output)
+		if err := fset.Parse(args); err != nil {
+			return err
+		}
+		c.wordCount = *wordCount
+		args = fset.Args()
+		if len(args) < 1 {
 			return nil
 		}
 		f, err := os.Open(args[0])
@@ -74,7 +84,7 @@ func (c counter) Lines() int {
 
 func Lines() int {
 	c, err := NewCounter(
-		WithInputFromArgs(os.Args[1:]),
+		FromArgs(os.Args[1:]),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -95,11 +105,26 @@ func (c counter) Words() int {
 
 func Words() int {
 	c, err := NewCounter(
-		WithInputFromArgs(os.Args[1:]),
+		FromArgs(os.Args[1:]),
 	)
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		panic("internal error")
 	}
 	return c.Words()
+}
+
+func RunCLI() {
+	c, err := NewCounter(
+		FromArgs(os.Args[1:]),
+	)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	if c.wordCount {
+		fmt.Println(c.Words())
+	} else {
+		fmt.Println(c.Lines())
+	}
 }
