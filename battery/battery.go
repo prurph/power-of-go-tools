@@ -2,6 +2,7 @@ package battery
 
 import (
 	"fmt"
+	"os/exec"
 	"regexp"
 	"strconv"
 )
@@ -11,6 +12,15 @@ type Status struct {
 }
 
 var pmsetOutput = regexp.MustCompile("(\\d+)%")
+
+func GetPmsetOutput() (string, error) {
+	data, err := exec.Command("/usr/bin/pmset", "-g", "ps").CombinedOutput()
+	if err != nil {
+		return "", err
+
+	}
+	return string(data), nil
+}
 
 func ParsePmsetOutput(text string) (Status, error) {
 	matches := pmsetOutput.FindStringSubmatch(text)
