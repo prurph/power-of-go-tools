@@ -1,6 +1,9 @@
 package pipeline
 
 import (
+	"bufio"
+	"bytes"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -29,6 +32,30 @@ func FromFile(pathname string) *Pipeline {
 	}
 }
 
+// Transformations
+func (p *Pipeline) Column(col int) *Pipeline {
+	if p.Error != nil {
+		p.Reader = strings.NewReader("")
+		return p
+	}
+	if col < 1 {
+		p.Error = fmt.Errorf("bad column %d: must be positive", col)
+	}
+	result := &bytes.Buffer{}
+	scanner := bufio.NewScanner(p.Reader)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) < col {
+			continue
+		}
+		fmt.Fprintln(result, fields[col-1])
+	}
+	return &Pipeline{
+		Reader: result,
+	}
+}
+
+// Sinks to get data out of a pipeline
 func (p *Pipeline) Stdout() {
 	if p.Error != nil {
 		return
