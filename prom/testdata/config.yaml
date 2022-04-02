@@ -1,0 +1,9 @@
+# global Prometheus config
+global:
+  scrape_interval: 15s
+  evaluation_interval: 30s
+  # scrape_timeout is global default (10s).
+
+  external_labels:
+    monitor: codelab
+    fruit: watermelon
